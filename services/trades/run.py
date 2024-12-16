@@ -1,12 +1,15 @@
+from typing import Union
 from loguru import logger
 from quixstreams import Application
 from config import config
-from src.kraken_api import KrakenMockAPI
+from src.kraken_api.mock import KrakenMockAPI
+from src.kraken_api.websocket import KrakenWebsocketAPI
 
 
 def main(
     kafka_broker_address: str,
-    kafka_topic: str
+    kafka_topic: str,
+    kraken_api: Union[KrakenWebsocketAPI, KrakenMockAPI]
 ):
     """
     It does 2 things:
@@ -16,13 +19,13 @@ def main(
     Args:
         kafka_broker_address: str
         kafka_topic: str
+        kraken_api: Union[KrakenWebsocketAPI, KrakenMockAPI]
       
     Returns:
         None
     """
     logger.info('Start the trades service')
-    # Mock Data for Kraken API
-    kraken_api = KrakenMockAPI("BTC/USD")
+    
     
     # Initialize the Quix Streams application.
     # This class handles all the low-level details to connect to Kafka.
@@ -46,7 +49,8 @@ def main(
                 )
 
                 # push the serialized message to the topic
-                producer.produce(topic=topic.name, value=message.value, key=message.key)
+                producer.produce(topic=topic.name, value=message.value, key=message.key
+                                )
 
                 logger.info(f'Pushed trade to Kafka: {trade}')
 
@@ -54,5 +58,7 @@ def main(
 if __name__ == '__main__':
     main(
         config.kafka_broker_address,
-        config.kafka_topic
+        config.kafka_topic,
+        # Mock Data for Kraken API
+        kraken_api=KrakenWebsocketAPI(pairs=config.pairs)
         )
