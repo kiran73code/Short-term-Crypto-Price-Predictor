@@ -1,7 +1,8 @@
 from typing import Union
+
+from config import config
 from loguru import logger
 from quixstreams import Application
-from config import config
 from src.kraken_api.mock import KrakenMockAPI
 from src.kraken_api.websocket import KrakenWebsocketAPI
 
@@ -24,7 +25,7 @@ def main(
     Returns:
         None
     """
-    logger.info("Start the trades service")
+    logger.info('Start the trades service')
 
     # Initialize the Quix Streams application.
     # This class handles all the low-level details to connect to Kafka.
@@ -36,7 +37,7 @@ def main(
         trades = kraken_api.get_trades()
 
         # Define the topic where we will push the trades to
-        topic = app.topic(name=kafka_topic, value_serializer="json")
+        topic = app.topic(name=kafka_topic, value_serializer='json')
 
         with app.get_producer() as producer:
             for trade in trades:
@@ -49,10 +50,10 @@ def main(
                 # push the serialized message to the topic
                 producer.produce(topic=topic.name, value=message.value, key=message.key)
 
-                logger.info(f"Pushed trade to Kafka: {trade}")
+                logger.info(f'Pushed trade to Kafka: {trade}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(
         config.kafka_broker_address,
         config.kafka_topic,
