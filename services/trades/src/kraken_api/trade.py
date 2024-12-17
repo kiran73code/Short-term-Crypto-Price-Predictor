@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class Trade(BaseModel):
     """
-    SAMPLE WEBSOCKET API trade data 
+    SAMPLE WEBSOCKET API trade data
         "symbol": "MATIC/USD",
         "side": "buy",
         "price": 0.5147,
@@ -13,12 +13,13 @@ class Trade(BaseModel):
         "trade_id": 4665846,
         "timestamp": "2023-09-25T07:48:36.925533Z"
     """
+
     pair: str
     price: float
     volume: float
     timestamp: datetime
     timestamp_ms: int
-    
+
     def to_dict(self) -> dict:
         """
         return the dictionary
@@ -28,5 +29,5 @@ class Trade(BaseModel):
             "pair": self.pair,
             "price": self.price,
             "volume": self.volume,
-            "timestamp_ms": self.timestamp_ms
-            }
+            "timestamp_ms": self.timestamp_ms,
+        }
