@@ -27,6 +27,7 @@ def init_candle(trade: dict) -> dict:
     """
     # breakpoint()
     return {
+        'pair': trade['pair'],
         'open': trade['price'],
         'high': trade['price'],
         'low': trade['price'],
@@ -41,6 +42,7 @@ def update_candle(candle: dict, trade: dict) -> dict:
     Update the candle with the latest trade
     """
     # breakpoint()
+    candle['pair'] = trade['pair']
     candle['close'] = trade['price']
     candle['high'] = max(candle['high'], trade['price'])
     candle['low'] = min(candle['low'], trade['price'])
@@ -55,6 +57,7 @@ def main(
     kafka_output_topic: str,
     kafka_consumer_group: str,
     candle_seconds: int,
+    emit_incomplete_candles: bool,
 ):
     """
     3 steps:
@@ -103,12 +106,49 @@ def main(
     )
 
     # Emmit the current candle
-    sdf = sdf.current()
+    if emit_incomplete_candles:
+        sdf = sdf.current()
+    else:
+        sdf = sdf.final()
+
+    # Extract open, high, low, close, volume, timestamp_ms, pair from the dataframe
+    sdf['open'] = sdf['value']['open']
+    sdf['high'] = sdf['value']['high']
+    sdf['low'] = sdf['value']['low']
+    sdf['close'] = sdf['value']['close']
+    sdf['volume'] = sdf['value']['volume']
+    sdf['timestamp_ms'] = sdf['value']['timestamp_ms']
+    sdf['pair'] = sdf['value']['pair']
+
+    # Extract window start and end timestamps
+    sdf['window_start_ms'] = sdf['start']
+    sdf['window_end_ms'] = sdf['end']
+
+    # keep only the relevant columns
+    sdf = sdf[
+        [
+            'pair',
+            'timestamp_ms',
+            'open',
+            'high',
+            'low',
+            'close',
+            'volume',
+            'window_start_ms',
+            'window_end_ms',
+        ]
+    ]
+
+    sdf['candle_seconds'] = candle_seconds
+
+    # sdf = sdf.print()
+    sdf = sdf.update(lambda value: logger.info(f'Candle: {value}'))
+    # sdf = sdf.update(lambda value: breakpoint())
 
     # push the candle to the output topic
     sdf = sdf.to_topic(topic=output_topic)
 
-    # Restart the app
+    # Start the application
     app.run()
 
 
@@ -120,4 +160,5 @@ if __name__ == '__main__':
         kafka_output_topic=config.kafka_output_topic,
         kafka_consumer_group=config.kafka_consumer_group,
         candle_seconds=config.candle_seconds,
+        emit_incomplete_candles=config.emit_incomplete_candles,
     )
