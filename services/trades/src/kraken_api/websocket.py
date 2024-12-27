@@ -84,7 +84,7 @@ class KrakenWebsocketAPI:
                     'method': 'subscribe',
                     'params': {
                         'channel': 'trade',
-                        'symbol': ['MATIC/USD'],
+                        'symbol': self.pairs,
                         'snapshot': False,
                     },
                 }

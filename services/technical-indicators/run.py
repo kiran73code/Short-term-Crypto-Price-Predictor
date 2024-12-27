@@ -50,7 +50,7 @@ def main(
     sdf = app.dataframe(topic=input_topic)
 
     # We only keep the candles with the same window size as the candle_seconds
-    # Thanks Carlo!
+
     sdf = sdf[sdf['candle_seconds'] == candle_seconds]
 
     # Update the list of candles in the state
@@ -66,7 +66,7 @@ def main(
 
     # Send the final messages to the output topic
     sdf = sdf.to_topic(output_topic)
-
+    print('done')
     app.run()
 
 
