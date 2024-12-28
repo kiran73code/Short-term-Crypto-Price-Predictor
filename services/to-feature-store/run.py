@@ -1,3 +1,5 @@
+from typing import Literal
+
 from config import config, hopsworks_credentials
 from loguru import logger
 from quixstreams import Application
@@ -9,6 +11,7 @@ def main(
     kafka_input_topic: str,
     kafka_consumer_group: str,
     output_sink: HopsworksFeatureStoreSink,
+    data_source: Literal['live', 'historical', 'test'],
 ):
     """
     2 main functions:
@@ -29,6 +32,7 @@ def main(
     app = Application(
         broker_address=kafka_broker_address,
         consumer_group=kafka_consumer_group,
+        auto_offset_reset='latest' if data_source == 'live' else 'earliest',
     )
 
     # setupup input topic
@@ -53,6 +57,7 @@ if __name__ == '__main__':
         feature_group_version=config.feature_group_version,
         feature_group_primary_keys=config.feature_group_primary_keys,
         feature_group_event_time=config.feature_group_event_time,
+        feature_group_materialization_interval_minutes=config.feature_group_materialization_interval_minutes,
     )
 
     main(
@@ -60,4 +65,5 @@ if __name__ == '__main__':
         kafka_input_topic=config.kafka_input_topic,
         kafka_consumer_group=config.kafka_consumer_group,
         output_sink=hopsworks_sink,
+        data_source=config.data_source,
     )

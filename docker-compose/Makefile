@@ -1,23 +1,35 @@
-# Redpand cluster
-redpanda-start:
-	docker-compose -f redpanda.yml up -d
-	
-redpanda-stop:
-	docker-compose -f redpanda.yml down
+########################################
+## Redpanda management
+########################################
 
+start-redpanda: 
+	docker compose -f redpanda.yml up -d
+
+stop-redpanda:
+	docker compose -f redpanda.yml down
 
 add-one-partition-to-trades-topic:
 	docker compose -f redpanda.yml exec redpanda rpk topic add-partitions trades --num 1
 
-# technical-indicators-pipeline
+########################################
+## Technical indicators pipeline 
+########################################
 
-technical-indicators-pipeline-build:
-	docker compose -f technical-indicators-pipeline.yml build
+# for live data
+build-technical-indicators-live:
+	docker compose -f technical-indicators-live.yml build
 
-technical-indicators-pipeline-run: technical-indicators-pipeline-build
-	docker compose -f technical-indicators-pipeline.yml up
+start-technical-indicators-live: build-technical-indicators-live
+	docker compose -f technical-indicators-live.yml up -d
 
-technical-indicators-pipeline-stop:
-	docker compose -f technical-indicators-pipeline.yml down
+stop-technical-indicators-live:
+	docker compose -f technical-indicators-live.yml down
 
+# for historical data
+build-technical-indicators-historical:
+	docker compose -f technical-indicators-historical.yml build
 	
+backfill-technical-indicators: build-technical-indicators-historical
+	$(eval RUN_ID := $(shell uuidgen))
+	@echo "Starting backfill with RUN_ID: $(RUN_ID)"
+	RUN_ID=$(RUN_ID) docker compose -f technical-indicators-historical.yml up -d
