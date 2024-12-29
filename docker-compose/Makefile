@@ -33,3 +33,15 @@ backfill-technical-indicators: build-technical-indicators-historical
 	$(eval RUN_ID := $(shell uuidgen))
 	@echo "Starting backfill with RUN_ID: $(RUN_ID)"
 	RUN_ID=$(RUN_ID) docker compose -f technical-indicators-historical.yml up -d
+
+
+
+
+########################################
+## Clean up historical topics in kafka
+########################################
+
+# Remove unused Kafka topic after backfill operations
+clean-backfill-kakfa-topics:
+	@echo "Removing all Kafka topics that contain the word historical"
+	docker compose -f redpanda.yml exec redpanda rpk topic delete -r ".*historical.*"
