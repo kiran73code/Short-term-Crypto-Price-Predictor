@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Tuple
 
 import requests
@@ -16,7 +17,15 @@ class News(BaseModel):
     source: str
 
     def to_dict(self) -> dict:
-        return self.model_dump()
+        return {
+            **self.model_dump(),
+            'timestamp_ms': int(
+                datetime.fromisoformat(
+                    self.published_at.replace('Z', '+00:00')
+                ).timestamp()
+                * 1000
+            ),
+        }
 
 
 class NewsDownloader:

@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class CryptopanicCredentials(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file='cryptonic_credentials.env', env_file_encoding='utf-8'
+        env_file='cryptopanic_credentials.env', env_file_encoding='utf-8'
     )
     api_key: str
 

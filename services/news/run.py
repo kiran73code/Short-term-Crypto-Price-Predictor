@@ -30,7 +30,7 @@ def main(kafka_broker_address: str, kafka_topic: str, input_source: NewsDataSour
     sdf = app.dataframe(source=news_data_source)
 
     # print the news to the console
-    sdf.print(metadata=True)
+    # sdf.print(metadata=True)
 
     # Push the news to the kafka topic
     sdf.to_topic(output_topic)
